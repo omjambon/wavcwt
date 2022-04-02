@@ -1,0 +1,6 @@
+fid = fopen('C:\Users\HP\Desktop\wavelet\solodalton.iq', 'r');  %for read
+data = fread(fid, 'uint16');  %read two bytes at a time
+Fs= 40e6
+
+figure
+cwt(data,Fs)
