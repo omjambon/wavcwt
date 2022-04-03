@@ -3,67 +3,33 @@ import numpy as np
 
 
 def cwt(data, wavelet_name, sampling_frequency=1.):
-    """
-    cwt(data, scales, wavelet)
-
-    One dimensional Continuous Wavelet Transform.
-
-    Parameters
-    ----------
-    data : array_like
-        Input signal
-    wavelet_name : Wavelet object or name
-        Wavelet to use. Currently, only the Morlet wavelet is supported ('morl').
-    sampling_frequency : float
-        Sampling frequency for frequencies output (optional)
-
-    Returns
-    -------
-    coefs : array_like
-        Continous wavelet transform of the input signal for the given scales
-        and wavelet
-    frequencies : array_like
-        if the unit of sampling period are seconds and given, than frequencies
-        are in hertz. Otherwise Sampling period of 1 is assumed.
-
-    Notes
-    -----
-    Size of coefficients arrays is automatically calculated given the wavelet and the data length. Currently, only the
-    Morlet wavelet is supported.
-
-    Examples
-    --------
-    fs = 1e3
-    t = np.linspace(0, 1, fs+1, endpoint=True)
-    x = np.cos(2*np.pi*32*t) * np.logical_and(t >= 0.1, t < 0.3) + np.sin(2*np.pi*64*t) * (t > 0.7)
-    wgnNoise = 0.05 * np.random.standard_normal(t.shape)
-    x += wgnNoise
-    c, f = cwt.cwt(x, 'morl', sampling_frequency=fs, plot_scalogram=True)
-    """
 
     # Currently only supported for Morlet wavelets
     if wavelet_name == 'morl':
-        data -= np.mean(data)
         n_orig = data.size
         nv = 10
         ds = 1 / nv
         fs = sampling_frequency
         dt = 1 / fs
-
+        
         # Pad data symmetrically
         padvalue = n_orig // 2
+        print(n_orig, " ds : ", ds, " dt : ", padvalue)
+        
+       
         x = np.concatenate((np.flipud(data[0:padvalue]), data, np.flipud(data[-padvalue:])))
         n = x.size
-
+        # print(x)
         # Define scales
         _, _, wavscales = getDefaultScales(wavelet_name, n_orig, ds)
         num_scales = wavscales.size
-
         # Frequency vector sampling the Fourier transform of the wavelet
         omega = np.arange(1, math.floor(n / 2) + 1, dtype=np.float64)
         omega *= (2 * np.pi) / n
+        
         omega = np.concatenate((np.array([0]), omega, -omega[np.arange(math.floor((n - 1) / 2), 0, -1, dtype=int) - 1]))
-
+        print("np.array([0]) : ",np.concatenate((np.array([0]), omega)))
+        # print("Omega : ",omega)
         # Compute FFT of the (padded) time series
         f = np.fft.fft(x)
 
@@ -115,12 +81,14 @@ def getDefaultScales(wavelet, n, ds):
 
         # Determine longest useful scale for wavelet
         max_scale = n // (np.sqrt(2) * s0)
+        
         if max_scale <= 1:
             max_scale = n // 2
         max_scale = np.floor(nv * np.log2(max_scale)) 
         a0 = 2 ** ds
+        print("max a0 = ",a0)
         scales = s0 * a0 ** np.arange(0, max_scale + 1)
-        print(scales)
+        # print((scales))
     else:
         raise Exception
 

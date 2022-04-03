@@ -36,11 +36,18 @@ zza = np.array(za)
 zzb = np.array(zb)
 zzz = zza + 1j*zzb
 sig0 = zzz
+
 import cwt
 
-Zxx = (np.fft.fft(sig0))
-freqs = np.square(np.abs(Zxx))
-cfs, f = cwt.cwt(freqs/np.max(freqs), 'morl', sampling_frequency=40e6)
+
+# fs = 1e3
+# t = np.linspace(0, 1, fs+1, endpoint=True)
+# x = np.cos(2*np.pi*32*t) * np.logical_and(t >= 0.1, t < 0.3) + np.sin(2*np.pi*64*t) * (t > 0.7)
+# wgnNoise = 0.05 * np.random.standard_normal(t.shape)
+# x += wgnNoise
+# for i in range(0,len(sig0)):
+    # print(sig0[i])
+cfs, f = cwt.cwt(sig0, 'morl', sampling_frequency=40e6)
 scales = [2**4, 2**6, 2**8]  # Wavelet scales
 imshow(cfs*np.abs(cfs), yticks=scales, abs=1,
        title="abs(CWT) | Morlet wavelet",
