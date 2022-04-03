@@ -7,6 +7,49 @@
 
 using namespace std;
 
+struct waveftStruct //structure pour la fonction waveft
+{
+     std::vector<std::vector<double>>  wft;
+     std::vector<double>  frequencies;
+};
+
+waveftStruct waveft(std::vector<double> omega, std::vector<double> scales)
+{
+    int num_freq = omega.size();
+    int num_scales = scales.size();
+    int gC = 6;
+    int mul = 2;
+    double fourier_factor = gC / (2 * M_PI);
+
+    std::vector<double> expnt;
+    std::vector<double> wft; //Array of vector contenant la transformée où chaque ligne corresponds à un scale
+    std::vector<std::vector<double>> wfts; //Array of vector contenant la transformée où chaque ligne corresponds à un scale
+    std::vector<double> frequencies;
+    for (int i=0; i<scales.size();i++)
+    {
+        expnt.clear();
+        wft.clear();
+        //std::cout<<"scales  : "<<scales[i] <<" omega : "<<omega[i]<<std::endl;
+        for (int ii=0; ii<omega.size();ii++)
+        {
+            expnt.push_back(-pow((scales[i] * omega[ii] - gC),2)/2*(omega[ii]>=0?1:0)); //-pow((scales[i] * omega[i] - gC),2)/2*(omega[i])
+            wft.push_back(mul *exp(expnt[i]) *(omega[ii]>=0?1:0));
+           //std::cout<<"scale : "<<scales[i]<<" expnt  : "<<-pow((scales[i] * omega[ii] - gC),2)/2*(omega[ii]>=0?1:0)<<std::endl;
+        }
+        wfts.push_back(wft);
+                //std::cout<<"expnt : "<<expnt[10]<<std::endl;
+        std::cout<<"wft : "<<wfts[i][10]<<std::endl;
+        frequencies.push_back(fourier_factor / scales[i]);
+//        std::cout<<"frequencies : "<<frequencies[i]<<std::endl;
+    }
+
+    waveftStruct result = {wfts, frequencies };
+    return result;
+}
+
+
+
+
 std::vector<double> getDefaultScales(int n, double ds)
 {
     int s0 = 2; // Plus petit scale utile
@@ -69,23 +112,35 @@ int main()
 
     for (int i=0; i<wavscales.size();i++)
     {
-    std::cout<<" wavscales : "<<wavscales[i]<< std::endl;
+    //std::cout<<" wavscales : "<<wavscales[i]<< std::endl;
     }
     int num_scales = wavscales.size();
-    std::cout<<" num_scales : "<<num_scales<< std::endl;
+    //std::cout<<" num_scales : "<<num_scales<< std::endl;
 
+    //on prepare omega pour concatener les trois parties
     std::vector<double> omega;
     for (int value = 1; value < floor(n/2) + 1; value++)
     {
         omega.push_back(value*(2 * M_PI) / n);
-
+    }
+    omega.insert(omega.begin(),0.0);
+    std::vector<double> omegatmp = omega;
+    for (int i = floor((n-1)/2); i >0 ; i--)
+    {
+        omega.push_back(-omega[i]);
     }
 
+    //Affichage omega
         for (int value = 0; value < omega.size(); value++)
     {
-        std::cout<<" omega : "<<omega[value]<< std::endl;
+        //std::cout<<" omega : "<<omega.size()<< std::endl;
     }
 
+    waveftStruct wftStruct = waveft(omega, wavscales);
+    for (int i=0;i<wavscales.size();i++)
+    {
+        std::cout<<" truc : "<<wftStruct.wft[i][10]<< std::endl;
+    }
 
     cout << "Hello world!" << endl;
     return 0;
